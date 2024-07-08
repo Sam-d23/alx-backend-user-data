@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Imports route definitions from the 'index' and
-'users' modules within the 'api.v1.views' package.
+""" DocDocDocDocDocDoc
 """
 from flask import Blueprint
 

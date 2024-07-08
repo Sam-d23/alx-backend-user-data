@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-API's Route module
+Route module for the API
 """
 from os import getenv
 from api.v1.views import app_views
@@ -16,7 +16,7 @@ CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
 @app.errorhandler(404)
 def not_found(error) -> str:
-    """Handler for Not found error
+    """ Not found handler
     """
     return jsonify({"error": "Not found"}), 404
 
