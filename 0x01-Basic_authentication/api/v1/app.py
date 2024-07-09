@@ -37,9 +37,9 @@ def before_request() -> str:
         auth_header = auth.authorization_header(request)
         user = auth.current_user(request)
         if auth_header is None:
-            abort(401)
+            abort(401, description="Unauthorized")
         if user is None:
-            abort(403)
+            abort(403, description="Forbidden")
 
 
 @app.errorhandler(404)
