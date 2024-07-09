@@ -23,8 +23,7 @@ elif AUTH_TYPE == "basic_auth":
 
 @app.before_request
 def bef_req():
-    """Each request is filtered before it's handled by the proper route.
-    """
+    """Each request is filtered before it's handled by the proper route."""
     if auth is None:
         pass
     else:
@@ -41,20 +40,17 @@ def bef_req():
 
 @app.errorhandler(404)
 def not_found(error) -> str:
-    """Handles Not found error.
-    """
+    """Handles Not found error."""
     return jsonify({"error": "Not found"}), 404
 
 @app.errorhandler(401)
 def unauthorized(error) -> str:
-    """Handles Request unauthorized error.
-    """
+    """Handles Request unauthorized error."""
     return jsonify({"error": "Unauthorized"}), 401
 
 @app.errorhandler(403)
 def forbidden(error) -> str:
-    """Handles Request unauthorized error.
-    """
+    """Handles Request unauthorized error."""
     return jsonify({"error": "Forbidden"}), 403
 
 
