@@ -5,7 +5,7 @@ Route module for the API
 import os
 from os import getenv
 from flask import Flask, jsonify, abort, request
-from flask_cors import CORS
+from flask_cors import (CORS, cross_origin)
 
 from api.v1.views import app_views
 from api.v1.auth.auth import Auth
@@ -15,12 +15,11 @@ from api.v1.auth.basic_auth import BasicAuth
 app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
-
 auth = None
-auth_type = os.getenv('AUTH_TYPE', 'auth')
+auth_type = getenv('AUTH_TYPE', 'auth')
 if auth_type == 'auth':
     auth = Auth()
-elif auth_type == 'basic_auth':
+if auth_type == 'basic_auth':
     auth = BasicAuth()
 
 
@@ -46,9 +45,7 @@ def forbidden(error) -> str:
 def authenticate_user():
     """Authenticating a user before processing a request.
     """
-    if auth is None:
-        pass
-    else:
+    if auth:
         excluded_paths = [
             '/api/v1/status/',
             '/api/v1/unauthorized/',
@@ -58,9 +55,9 @@ def authenticate_user():
             auth_header = auth.authorization_header(request)
             user = auth.current_user(request)
             if auth_header is None:
-                abort(401, description="Unauthorized")
+                abort(401)
             if user is None:
-                abort(403, description="Forbidden")
+                abort(403)
 
 
 if __name__ == "__main__":
