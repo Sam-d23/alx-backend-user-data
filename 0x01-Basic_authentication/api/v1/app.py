@@ -46,7 +46,7 @@ def authenticate_user():
     """Authenticating a user before processing a request.
     """
     if auth:
-    excluded_paths = [
+        excluded_paths = [
         '/api/v1/status/',
         '/api/v1/unauthorized/',
         '/api/v1/forbidden/'
