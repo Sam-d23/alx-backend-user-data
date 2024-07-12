@@ -7,18 +7,20 @@ import re
 import logging
 import mysql.connector
 from typing import List
+from mysql.connector import Error
 
 
 patterns = {
-    'extract': lambda x, y: r'(?P<field>{})=[^{}]*'.format('|'.join(x), y),
+    'extract': lambda x, y: r'(?P<field>{})=[^{}]*'.format(
+        '|'.join(map(re.escape, x)), re.escape(y)),
     'replace': lambda x: r'\g<field>={}'.format(x),
 }
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
 
 def filter_datum(
-        fields: List[str], redaction: str, message: str, separator: str,
-        ) -> str:
+        fields: List[str], redaction: str, message: str, separator: str
+    ) -> str:
     """
     Filtering a log line.
     """
@@ -47,14 +49,18 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
     db_user = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
     db_pwd = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
-    connection = mysql.connector.connect(
-        host=db_host,
-        port=3306,
-        user=db_user,
-        password=db_pwd,
-        database=db_name,
-    )
-    return connection
+    try:
+        connection = mysql.connector.connect(
+            host=db_host,
+            port=3306,
+            user=db_user,
+            password=db_pwd,
+            database=db_name,
+        )
+        return connection
+    except Error as e:
+        print(f"Error: {e}")
+        return None
 
 
 def main():
@@ -66,6 +72,9 @@ def main():
     query = "SELECT {} FROM users;".format(fields)
     info_logger = get_logger()
     connection = get_db()
+    if connection is None:
+        return
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -75,19 +84,16 @@ def main():
                 zip(columns, row),
             )
             msg = '{};'.format('; '.join(list(record)))
-            args = ("user_data", logging.INFO, None, None, msg, None, None)
-            log_record = logging.LogRecord(*args)
-            info_logger.handle(log_record)
+            info_logger.info(msg)
 
 
 class RedactingFormatter(logging.Formatter):
     """
-    class for the redacting formator.
+    class for the redacting formatter.
     """
 
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
-    FORMAT_FIELDS = ('name', 'levelname', 'asctime', 'message')
     SEPARATOR = ";"
 
     def __init__(self, fields: List[str]):
